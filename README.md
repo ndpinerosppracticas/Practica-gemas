@@ -263,6 +263,11 @@ Luego necesitamos de un enlace en la vista que nos permita visualizar el pdf, pa
 ```
 en el cual le decimos que nos muestre esa vista del post en formato pdf.
 
+Finalmente ejecutamos el servidor con el comando 
+```
+rails s
+```
+Y verificamos que funcione correctamente.
 
 ## Referencias
 * [Subiendo Con Rails y Carrierwave](https://code.tutsplus.com/es/articles/uploading-with-rails-and-carrierwave--cms-28409)
