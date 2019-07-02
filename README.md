@@ -104,7 +104,7 @@ Y en caso de que no exista creamos el siguiente archivo <code>views/posts/_post.
 ```
 en la parte anterior se uso el truncate para mostrar solo los primeros 150 caracteres de la publicacion
 
-**Integrando Carrierwave**
+## Integrando Carrierwave
 
 Como ya incluímos la gema, carrierwave almacena la configuracion dentro de los uploaders que se incluyen en los modelos, entonces para generar un uploader usamos el siguiente comando
 ```
@@ -116,6 +116,7 @@ Luego debemos incluir el uploader al modelo <code>models/post.rb</code> agregand
 ```
 mount_uploader :image, ImageUploader
 ```
+**Usando Almacenamiento local**
 
 El uploader ya tiene algunos ajustes por defecto, pero almenos necesitamos saber en donde vamos a almacenar los archivos subidos, esto lo modificaremos en el archivo <code>uploaders/image_uploader.rb</code> 
 ```
@@ -123,9 +124,41 @@ El uploader ya tiene algunos ajustes por defecto, pero almenos necesitamos saber
   # storage :fog
 
 ```
-en caso de querer almacenar los archivos en un gestor en la nube se comenta <code>storage :file</code> y se descomenta <code>storage :fog</code>
-
 para este caso los archivos subidos seran colocados en la carpeta public/uploads
+
+**Usando S3** 
+
+Para esto primero debemos colocar e instalar la siguiente gema en el gemfile
+```
+gem "fog-aws"
+```
+Luego de esto en la consola escribimos el comando <code>bundle install</code>
+
+Para esta configuracion debemos de tener un bucket creado en AWS S3, ya que necesitaremos uno creado, por lo cual se debe de crear una cuenta en [AWS](https://aws.amazon.com/es/s3/),en la seccion de referencias se puede encontrar un video para la creacion de esta. 
+
+A continuacion crearemos el inicializador para Carrierwave y configuremos el almacenamiento en la nube de manera global <code>config/initializers/carrierwave.rb</code>
+
+```
+CarrierWave.configure do |config|
+  config.fog_provider = 'fog/aws'
+  config.fog_credentials = {
+      provider:              'AWS',
+      aws_access_key_id:     ENV['S3_KEY'],  #Reemplazar por los datos correspondientes o modificar las variables de entorno
+      aws_secret_access_key: ENV['S3_SECRET'],
+      region:                ENV['S3_REGION'],
+  }
+  config.fog_directory  = ENV['S3_BUCKET']
+end
+```
+Se nos solicitara los datos dados de la cuenta de AWS, como Access key ID, secret access key, el nombre del bucket y la region aunque esta es opcional.
+
+Luego en el uploader seleccionaremos para almacenar los archivos en la nube, esto lo modificaremos en el archivo <code>uploaders/image_uploader.rb</code>
+```
+ #storage :file
+ storage :fog
+```
+
+**Continuando con la implementacion**
 
 Aca vamos a crear y una nueva vista y un formulario para poder comenzar a subir archivos, esto lo realizamos en el archivo <code>views/posts/new.html.erb</code> 
 ```
@@ -185,7 +218,7 @@ luego modificamos la vista show en el cual observamos la imagen subida anteriorm
 <%= link_to 'Edit', edit_post_path(@post) %> |
 <%= link_to 'Back', posts_path %>
 ```
-**Integrando Will_paginate**
+## Integrando Will_paginate
 
 Como anteriormente instalamos la gema , ahora debemos modificar el index en el controlador <code>posts_controller.rb</code>
 ```
@@ -201,7 +234,7 @@ Luego agregamos lo siguiente a la vista index para controlar la pagina actual.
 ```
 Con esto realizamos la paginacion correctamente.
 
-**Integrando Wicked PDF**
+## Integrando Wicked PDF
 
 Ya que hemos agregado las gemas necesarias debemos de crear el inicializador con el siguiente comando
 ```
@@ -273,3 +306,4 @@ Y verificamos que funcione correctamente.
 * [Subiendo Con Rails y Carrierwave](https://code.tutsplus.com/es/articles/uploading-with-rails-and-carrierwave--cms-28409)
 * [Will_paginate](https://github.com/mislav/will_paginate)
 * [Wicked PDF](https://github.com/mileszs/wicked_pdf)
+* [Configure Carrierwave for AWS S3 Storage with Heroku](https://www.youtube.com/watch?v=afByHGIWKYQ) (Video)
